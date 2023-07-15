@@ -22,11 +22,27 @@ app.use(function (req, res, next) {
 /** general error handler */
 
 app.use(function(err, req, res, next) {
+
+  if (err.reason === "schema error") {
+
+    schemaErrors = err.message.map(e => {
+      return {"message" : e}
+    })
+
+    err.schemaErrors = schemaErrors
+
+    res.status(err.status)
+
+    return res.json({
+      error:{status: err.status, "Schema Errors": err.schemaErrors}
+    });
+
+  }
+
   res.status(err.status || 500);
 
   return res.json({
-    error: err,
-    message: err.message
+    error:{status: err.status, message: err.message}
   });
 });
 

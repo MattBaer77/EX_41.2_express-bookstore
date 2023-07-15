@@ -41,6 +41,7 @@ router.post("/", async function (req, res, next) {
     if(!result.valid) {
       const listErrors = result.errors.map(e => e.stack);
       const err = new ExpressError(listErrors, 400)
+      err.reason = "schema error"
       return next(err)
     }
 
@@ -61,9 +62,10 @@ router.put("/:isbn", async function (req, res, next) {
     if(!result.valid) {
       const listErrors = result.errors.map(e => e.stack);
       const err = new ExpressError(listErrors, 400)
+      err.reason = "schema error"
       return next(err)
     }
-    
+
     const book = await Book.update(req.params.isbn, req.body);
     return res.json({ book });
   } catch (err) {
