@@ -26,7 +26,9 @@ app.use(function(err, req, res, next) {
   if (err.reason === "schema error") {
 
     schemaErrors = err.message.map(e => {
-      return {"message" : e}
+
+      return e
+
     })
 
     err.schemaErrors = schemaErrors
@@ -34,7 +36,7 @@ app.use(function(err, req, res, next) {
     res.status(err.status)
 
     return res.json({
-      error:{status: err.status, "Schema Errors": err.schemaErrors}
+      error:{status: err.status, "schemaErrors": err.schemaErrors}
     });
 
   }
