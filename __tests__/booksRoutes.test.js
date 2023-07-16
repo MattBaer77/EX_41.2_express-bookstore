@@ -204,7 +204,6 @@ describe("Book Routes Test", function() {
 
             let response = await request(app).post("/books").send(failBookYEAR);
             expect(response.statusCode).toEqual(400)
-            console.log(response.body)
             expect(response.body).toHaveProperty("error")
             expect(response.body.error).toHaveProperty("schemaErrors")
             expect(response.body.error.schemaErrors.length).toEqual(1)
@@ -212,19 +211,200 @@ describe("Book Routes Test", function() {
 
         })
 
+        test("can post a book - FAIL - NO YEAR + NO TITLE", async() => {
+
+            const failBookYEAR = {
+
+                "isbn": "000000004",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+
+            }
+
+            let response = await request(app).post("/books").send(failBookYEAR);
+            expect(response.statusCode).toEqual(400)
+            expect(response.body).toHaveProperty("error")
+            expect(response.body.error).toHaveProperty("schemaErrors")
+            expect(response.body.error.schemaErrors.length).toEqual(2)
+            expect(response.body.error.schemaErrors[0]).toContain("title")
+            expect(response.body.error.schemaErrors[1]).toContain("year")
+
+        })
+
 
     })
 
+    describe("PUT /books/:isbn", function () {
+
+        test("can modify a book - SUCCESS", async() => {
+
+            const successBook = {
+
+                "isbn": "000000003",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+                "title": "Sample Title 4",
+                "year": 2020
+
+            }
+
+            let response = await request(app).put("/books/000000003").send(successBook);
+            expect(response.statusCode).toEqual(200)
+            expect(response.body).toHaveProperty("book")
+            expect(response.body.book.title).toEqual("Sample Title 4")
 
 
+        })
+
+        test("can modify a book - SUCCESS - ALSO CHANGES ISBN", async() => {
+
+            const successBook = {
+
+                "isbn": "000000004",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+                "title": "Sample Title 4",
+                "year": 2020
+
+            }
+
+            let response = await request(app).put("/books/000000003").send(successBook);
+            expect(response.statusCode).toEqual(200)
+            expect(response.body).toHaveProperty("book")
+            expect(response.body.book.title).toEqual("Sample Title 4")
 
 
+        })
+
+        test("can modify a book - FAIL - NO YEAR", async() => {
+
+            const failBookYEAR = {
+
+                "isbn": "000000004",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+                "title": "Sample Title 4",
+
+            }
+
+            let response = await request(app).put("/books/000000003").send(failBookYEAR);
+            expect(response.statusCode).toEqual(400)
+            expect(response.body).toHaveProperty("error")
+            expect(response.body.error).toHaveProperty("schemaErrors")
+            expect(response.body.error.schemaErrors.length).toEqual(1)
+            expect(response.body.error.schemaErrors[0]).toContain("year")
+
+        })
+
+        test("can modify a book - FAIL - NO YEAR + NO TITLE", async() => {
+
+            const failBookYEAR = {
+
+                "isbn": "000000004",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+
+            }
+
+            let response = await request(app).put("/books/000000003").send(failBookYEAR);
+            expect(response.statusCode).toEqual(400)
+            expect(response.body).toHaveProperty("error")
+            expect(response.body.error).toHaveProperty("schemaErrors")
+            expect(response.body.error.schemaErrors.length).toEqual(2)
+            expect(response.body.error.schemaErrors[0]).toContain("title")
+            expect(response.body.error.schemaErrors[1]).toContain("year")
+
+        })
 
 
+        test("can modify a book - FAIL - NO SUCH BOOK", async() => {
 
+            const failNoBook = {
+
+                "isbn": "000000004",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+                "title": "Sample Title 4",
+                "year": 2020
+
+            }
+
+            let response = await request(app).put("/books/000000004").send(failNoBook);
+            expect(response.statusCode).toEqual(404)
+            // expect(response.body).toHaveProperty("book")
+            // expect(response.body.book.title).toEqual("Sample Title 4")
+
+
+        })
+
+
+        test("can modify a book - FAIL - NO SUCH BOOK - BUT NO YEAR SPECIFIED", async() => {
+
+            const failNoBookYear = {
+
+                "isbn": "000000004",
+                "amazon_url": "http://a.co/eobPtX2",
+                "author": "Sample Author 4",
+                "language": "english",
+                "pages": 267,
+                "publisher": "Sample Publisher 4",
+                "title": "Sample Title 4",
+
+            }
+
+            let response = await request(app).put("/books/000000004").send(failNoBookYear);
+            expect(response.statusCode).toEqual(400)
+            expect(response.body).toHaveProperty("error")
+            expect(response.body.error).toHaveProperty("schemaErrors")
+            expect(response.body.error.schemaErrors.length).toEqual(1)
+            expect(response.body.error.schemaErrors[0]).toContain("year")
+
+        })
+
+    })
+
+    describe("DELETE /books/:isbn", function () {
+
+        test("can delete a book - SUCCESS", async () => {
+
+            let response = await request(app).delete("/books/000000003")
+            expect(response.statusCode).toEqual(200)
+            expect(response.body).toHaveProperty("message")
+            expect(response.body.message).toEqual("Book deleted")
+
+        })
+
+        test("can delete a book - FAIL - NO SUCH BOOK", async () => {
+
+            let response = await request(app).delete("/books/000000004")
+            expect(response.statusCode).toEqual(404)
+            expect(response.body).toHaveProperty("error")
+            expect(response.body.error).toHaveProperty("message")
+            expect(response.body.error.message).toEqual("There is no book with an isbn '000000004")
+
+        })
+
+    })
 
 });
-
 
 afterAll(async function () {
     await db.end();
